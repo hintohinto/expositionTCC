@@ -1,563 +1,549 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link rel="manifest" href="/expositionTCC/manifest.webmanifest">
-    <meta name="theme-color" content="#0a0a0c">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/expositionTCC/icons/icon-192.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SereneTrack - Suivi d'Exposition</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Icons (Lucide) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+  <meta charset="UTF-8" />
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- PWA -->
+  <link rel="manifest" href="/expositionTCC/manifest.webmanifest">
+  <meta name="theme-color" content="#0a0a0c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="/expositionTCC/icons/icon-192.png">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: {
-                            orange: '#e67e22',
-                            hover: '#d35400',
-                            light: '#fff0e6'
-                        }
-                    },
-                    animation: {
-                        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-                    }
-                }
+  <title>SereneTrack - Suivi d'Exposition</title>
+
+  <!-- (Optionnel) Si tu as un vrai fichier CSS, décommente et mets le bon chemin :
+  <link rel="stylesheet" href="/expositionTCC/index.css">
+  -->
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Icons (Lucide) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              orange: '#e67e22',
+              hover: '#d35400',
+              light: '#fff0e6'
             }
+          },
+          animation: {
+            'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+          }
         }
-    </script>
+      }
+    }
+  </script>
 
-    <style>
-        body { background-color: #f9fafb; overscroll-behavior-y: contain; }
-        
-        /* Gestion des écrans */
-        .screen { display: none; height: 100%; flex-direction: column; }
-        .screen.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+  <style>
+    body { background-color: #f9fafb; overscroll-behavior-y: contain; }
 
-        /* Toast Notification */
-        #toast {
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
-            transform: translateY(-20px) translateX(-50%);
-        }
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-            transform: translateY(0) translateX(-50%);
-        }
+    /* Gestion des écrans */
+    .screen { display: none; height: 100%; flex-direction: column; }
+    .screen.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
 
-        /* Boutons Anxiété : Effet de presse */
-        .btn-anxiety:active { transform: scale(0.95); }
-    </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "recharts": "https://esm.sh/recharts@^3.6.0"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Toast Notification */
+    #toast {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      transform: translateY(-20px) translateX(-50%);
+    }
+    #toast.show {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0) translateX(-50%);
+    }
+
+    /* Boutons Anxiété : Effet de presse */
+    .btn-anxiety:active { transform: scale(0.95); }
+  </style>
 </head>
+
 <body class="text-gray-800 h-screen w-screen flex flex-col md:items-center md:justify-center md:bg-gray-100">
 
-    <main class="w-full md:max-w-[500px] bg-white h-full md:h-[800px] md:rounded-3xl md:shadow-2xl overflow-hidden flex flex-col relative">
-        
-        <!-- Header -->
-        <header class="bg-white border-b border-gray-100 p-4 flex justify-between items-center z-10 shrink-0">
-            <div>
-                <h1 class="text-xl font-bold text-gray-900 tracking-tight">Suivi d'Exposition</h1>
-                <p class="text-xs text-gray-500">Thérapie TCC</p>
-            </div>
-            <div class="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full">
-                <div id="status-indicator" class="h-2 w-2 rounded-full bg-gray-300"></div>
-                <div id="timer-display" class="text-lg font-mono font-bold text-gray-700">00:00</div>
-            </div>
-        </header>
+  <main class="w-full md:max-w-[500px] bg-white h-full md:h-[800px] md:rounded-3xl md:shadow-2xl overflow-hidden flex flex-col relative">
 
-        <!-- Zone de Contenu -->
-        <div class="flex-grow relative overflow-y-auto overflow-x-hidden p-4 md:p-6" id="app-container">
-            
-            <!-- ÉCRAN 1: ACCUEIL -->
-            <div id="screen-home" class="screen active justify-center items-center text-center space-y-8">
-                <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-2 animate-pulse">
-                    <i data-lucide="play" class="w-10 h-10 text-brand-orange ml-1"></i>
-                </div>
-                
-                <div>
-                    <h2 class="text-2xl font-bold mb-2 text-gray-800">Prêt ?</h2>
-                    <p class="text-gray-500 text-sm max-w-[280px] mx-auto leading-relaxed">
-                        L'écran restera allumé. Le téléphone vibrera chaque minute pour vous demander votre niveau.
-                    </p>
-                </div>
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-100 p-4 flex justify-between items-center z-10 shrink-0">
+      <div>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">Suivi d'Exposition</h1>
+        <p class="text-xs text-gray-500">Thérapie TCC</p>
+      </div>
+      <div class="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full">
+        <div id="status-indicator" class="h-2 w-2 rounded-full bg-gray-300"></div>
+        <div id="timer-display" class="text-lg font-mono font-bold text-gray-700">00:00</div>
+      </div>
+    </header>
 
-                <!-- Toggle Haptic -->
-                <button id="btn-haptic-toggle" onclick="app.toggleHaptics()" class="flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium bg-orange-100 text-brand-orange transition-colors">
-                    <i data-lucide="vibrate" class="w-3 h-3"></i>
-                    <span id="txt-haptic">Vibrations activées</span>
-                </button>
+    <!-- Zone de Contenu -->
+    <div class="flex-grow relative overflow-y-auto overflow-x-hidden p-4 md:p-6" id="app-container">
 
-                <div class="w-full max-w-xs space-y-3">
-                    <button onclick="app.goToPreSession()" class="w-full py-4 bg-brand-orange hover:bg-brand-hover text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-200 transition-transform active:scale-95 flex items-center justify-center">
-                        Démarrer la Séance
-                    </button>
-                    <button onclick="app.goToHistory()" class="w-full py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-medium flex items-center justify-center hover:bg-gray-50">
-                        <i data-lucide="history" class="w-4 h-4 mr-2"></i> Historique
-                    </button>
-                </div>
-            </div>
-
-            <!-- ÉCRAN 2: PRÉPARATION -->
-            <div id="screen-pre" class="screen">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-bold">Situation</h2>
-                    <button onclick="app.goToHome()" class="p-2 text-gray-400"><i data-lucide="x" class="w-6 h-6"></i></button>
-                </div>
-                <div class="flex-grow flex flex-col">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Contexte de l'exercice</label>
-                    <textarea id="input-situation" placeholder="Ex: Commander un café, prendre le métro..." class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-orange outline-none min-h-[150px] resize-none text-lg mb-4"></textarea>
-                    
-                    <button id="btn-start" onclick="app.startSession()" disabled class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center transition-all">
-                        C'est parti <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ÉCRAN 3: EN COURS (RUNNING) -->
-            <div id="screen-running" class="screen pb-2">
-                <!-- Info Situation -->
-                <div class="mb-4 text-center">
-                    <p id="lbl-situation" class="text-sm text-gray-500 font-medium truncate px-4">...</p>
-                </div>
-
-                <!-- Prompt Zone -->
-                <div class="flex items-center justify-center mb-4 h-12">
-                    <div id="prompt-badge" class="hidden bg-green-100 text-green-800 px-6 py-2 rounded-full text-sm font-bold flex items-center shadow-sm animate-bounce">
-                        <i data-lucide="alert-circle" class="w-4 h-4 mr-2"></i>
-                        <span id="prompt-text">Minute 1</span>
-                    </div>
-                    <p id="wait-text" class="text-gray-300 text-xs italic">Prochaine mesure dans quelques secondes...</p>
-                </div>
-
-                <!-- GRILLE DE BOUTONS (PAVÉ NUMÉRIQUE) -->
-                <div class="flex-grow grid grid-cols-2 gap-3 mb-4 content-end" id="anxiety-grid">
-                    <!-- Généré par JS -->
-                </div>
-
-                <button onclick="app.stopSession()" class="w-full py-4 border-2 border-red-100 text-red-500 bg-red-50 rounded-xl font-bold flex items-center justify-center active:bg-red-100">
-                    <i data-lucide="square" class="w-4 h-4 mr-2 fill-current"></i> Terminer l'exercice
-                </button>
-            </div>
-
-            <!-- ÉCRAN 4: POST-SÉANCE -->
-            <div id="screen-post" class="screen">
-                <div class="mb-6 pb-2 border-b border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                        <i data-lucide="check-circle" class="w-6 h-6 text-green-500 mr-2"></i> Bilan
-                    </h2>
-                </div>
-                <div class="flex flex-col flex-grow space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Conclusion</label>
-                        <textarea id="input-conclusion" placeholder="Comment ça s'est passé ?" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none min-h-[120px] resize-none"></textarea>
-                    </div>
-                    <button id="btn-save" onclick="app.saveSession()" disabled class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center">
-                        <i data-lucide="save" class="w-5 h-5 mr-2"></i> Enregistrer
-                    </button>
-                </div>
-            </div>
-
-            <!-- ÉCRAN 5: RÉSULTATS -->
-            <div id="screen-result" class="screen overflow-y-auto">
-                <div class="text-center mb-6 mt-2">
-                    <h2 class="text-2xl font-bold text-gray-800">Résultat</h2>
-                    <p class="text-gray-500 text-sm">Séance terminée</p>
-                </div>
-
-                <!-- Graphique -->
-                <div class="bg-white p-2 rounded-xl border border-gray-100 shadow-sm h-[250px] mb-4 w-full relative">
-                    <canvas id="chartCanvas"></canvas>
-                </div>
-
-                <!-- Conclusion Card -->
-                <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
-                    <p class="text-xs font-bold text-gray-400 uppercase mb-1">Conclusion</p>
-                    <p id="res-conclusion" class="text-gray-700 italic">...</p>
-                </div>
-
-                <div class="flex flex-col gap-3 pb-4 mt-auto">
-                    <button onclick="app.downloadCSV()" class="w-full py-4 bg-brand-orange text-white rounded-xl font-bold shadow-md flex items-center justify-center">
-                        <i data-lucide="download" class="w-5 h-5 mr-2"></i> CSV
-                    </button>
-                    <button onclick="app.reset()" class="w-full py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold flex items-center justify-center">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i> Nouvelle Séance
-                    </button>
-                </div>
-            </div>
-
-             <!-- ÉCRAN 6: HISTORIQUE -->
-             <div id="screen-history" class="screen overflow-hidden flex-col">
-                <div class="flex items-center mb-4 pb-2 border-b border-gray-100">
-                    <button onclick="app.goToHome()" class="p-2 -ml-2 text-gray-400"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-                    <h2 class="text-xl font-bold ml-2">Historique</h2>
-                </div>
-                <div id="history-list" class="flex-grow overflow-y-auto space-y-3 pr-1 pb-4">
-                    <!-- Items -->
-                </div>
-            </div>
-
+      <!-- ÉCRAN 1: ACCUEIL -->
+      <div id="screen-home" class="screen active justify-center items-center text-center space-y-8">
+        <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-2 animate-pulse">
+          <i data-lucide="play" class="w-10 h-10 text-brand-orange ml-1"></i>
         </div>
 
-        <!-- Toast Notification (Fixed Position) -->
-        <div id="toast" class="absolute top-6 left-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl flex items-center z-50">
-            <i data-lucide="check" class="w-4 h-4 mr-2 text-green-400"></i>
-            <span class="font-bold text-sm">Enregistré</span>
+        <div>
+          <h2 class="text-2xl font-bold mb-2 text-gray-800">Prêt ?</h2>
+          <p class="text-gray-500 text-sm max-w-[280px] mx-auto leading-relaxed">
+            L'écran restera allumé. Le téléphone vibrera chaque minute pour vous demander votre niveau.
+          </p>
         </div>
 
-    </main>
+        <!-- Toggle Haptic -->
+        <button id="btn-haptic-toggle" onclick="app.toggleHaptics()"
+          class="flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium bg-orange-100 text-brand-orange transition-colors">
+          <i data-lucide="vibrate" class="w-3 h-3"></i>
+          <span id="txt-haptic">Vibrations activées</span>
+        </button>
 
-    <!-- LOGIQUE JAVASCRIPT -->
-    <script>
-        const app = {
-            state: {
-                screen: 'screen-home',
-                elapsed: 0,
-                timerId: null,
-                situation: '',
-                dataPoints: [],
-                pendingMinute: null, // Si non null, l'utilisateur doit voter
-                history: [],
-                haptics: true,
-                currentSession: null
-            },
+        <div class="w-full max-w-xs space-y-3">
+          <button onclick="app.goToPreSession()"
+            class="w-full py-4 bg-brand-orange hover:bg-brand-hover text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-200 transition-transform active:scale-95 flex items-center justify-center">
+            Démarrer la Séance
+          </button>
+          <button onclick="app.goToHistory()"
+            class="w-full py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-medium flex items-center justify-center hover:bg-gray-50">
+            <i data-lucide="history" class="w-4 h-4 mr-2"></i> Historique
+          </button>
+        </div>
+      </div>
 
-            // --- INITIALISATION ---
-            init: function() {
-                // Charger historique
-                try {
-                    const saved = localStorage.getItem('serenetrack_sessions');
-                    if(saved) app.state.history = JSON.parse(saved);
-                } catch(e) {}
+      <!-- ÉCRAN 2: PRÉPARATION -->
+      <div id="screen-pre" class="screen">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg font-bold">Situation</h2>
+          <button onclick="app.goToHome()" class="p-2 text-gray-400">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        <div class="flex-grow flex flex-col">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Contexte de l'exercice</label>
+          <textarea id="input-situation" placeholder="Ex: Commander un café, prendre le métro..."
+            class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-orange outline-none min-h-[150px] resize-none text-lg mb-4"></textarea>
 
-                // Générer la grille de boutons (1-10)
-                const grid = document.getElementById('anxiety-grid');
-                grid.innerHTML = '';
-                for(let i=1; i<=10; i++) {
-                    const btn = document.createElement('button');
-                    btn.className = `btn-anxiety relative h-16 sm:h-20 rounded-xl font-bold text-2xl border-2 flex items-center justify-center transition-all ${app.getButtonColorClass(i)}`;
-                    btn.textContent = i;
-                    // Logique Tap & Go
-                    btn.onclick = () => app.handleVote(i);
-                    // Labels
-                    if(i===1) btn.innerHTML += '<span class="absolute bottom-1 text-[10px] font-normal opacity-60">Calme</span>';
-                    if(i===10) btn.innerHTML += '<span class="absolute bottom-1 text-[10px] font-normal opacity-60">Panique</span>';
-                    
-                    grid.appendChild(btn);
-                }
+          <button id="btn-start" onclick="app.startSession()" disabled
+            class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center transition-all">
+            C'est parti <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+          </button>
+        </div>
+      </div>
 
-                // Input listener
-                document.getElementById('input-situation').addEventListener('input', (e) => {
-                    const btn = document.getElementById('btn-start');
-                    if(e.target.value.trim()) {
-                        btn.disabled = false;
-                        btn.className = btn.className.replace('bg-gray-200 text-gray-400 cursor-not-allowed', 'bg-brand-orange text-white hover:bg-brand-hover cursor-pointer shadow-lg');
-                    } else {
-                        btn.disabled = true;
-                        btn.className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center transition-all';
-                    }
-                });
+      <!-- ÉCRAN 3: EN COURS -->
+      <div id="screen-running" class="screen pb-2">
+        <div class="mb-4 text-center">
+          <p id="lbl-situation" class="text-sm text-gray-500 font-medium truncate px-4">...</p>
+        </div>
 
-                document.getElementById('input-conclusion').addEventListener('input', (e) => {
-                    const btn = document.getElementById('btn-save');
-                    if(e.target.value.trim()) {
-                        btn.disabled = false;
-                        btn.className = btn.className.replace('bg-gray-200 text-gray-400 cursor-not-allowed', 'bg-green-600 text-white hover:bg-green-700 cursor-pointer shadow-lg');
-                    } else {
-                        btn.disabled = true;
-                        btn.className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center';
-                    }
-                });
+        <div class="flex items-center justify-center mb-4 h-12">
+          <div id="prompt-badge"
+            class="hidden bg-green-100 text-green-800 px-6 py-2 rounded-full text-sm font-bold flex items-center shadow-sm animate-bounce">
+            <i data-lucide="alert-circle" class="w-4 h-4 mr-2"></i>
+            <span id="prompt-text">Minute 1</span>
+          </div>
+          <p id="wait-text" class="text-gray-300 text-xs italic">Prochaine mesure dans quelques secondes...</p>
+        </div>
 
-                lucide.createIcons();
-            },
+        <div class="flex-grow grid grid-cols-2 gap-3 mb-4 content-end" id="anxiety-grid"></div>
 
-            // --- NAVIGATION ---
-            showScreen: function(id) {
-                document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-                document.getElementById(id).classList.add('active');
-                app.state.screen = id;
-                window.scrollTo(0,0);
-                lucide.createIcons();
-            },
+        <button onclick="app.stopSession()"
+          class="w-full py-4 border-2 border-red-100 text-red-500 bg-red-50 rounded-xl font-bold flex items-center justify-center active:bg-red-100">
+          <i data-lucide="square" class="w-4 h-4 mr-2 fill-current"></i> Terminer l'exercice
+        </button>
+      </div>
 
-            toggleHaptics: function() {
-                app.state.haptics = !app.state.haptics;
-                const btn = document.getElementById('btn-haptic-toggle');
-                const txt = document.getElementById('txt-haptic');
-                if(app.state.haptics) {
-                    btn.className = "flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium bg-orange-100 text-brand-orange transition-colors";
-                    txt.textContent = "Vibrations activées";
-                    app.vibrate(50);
-                } else {
-                    btn.className = "flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium bg-gray-100 text-gray-400 transition-colors";
-                    txt.textContent = "Vibrations désactivées";
-                }
-            },
+      <!-- ÉCRAN 4: POST-SÉANCE -->
+      <div id="screen-post" class="screen">
+        <div class="mb-6 pb-2 border-b border-gray-100">
+          <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <i data-lucide="check-circle" class="w-6 h-6 text-green-500 mr-2"></i> Bilan
+          </h2>
+        </div>
+        <div class="flex flex-col flex-grow space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Conclusion</label>
+            <textarea id="input-conclusion" placeholder="Comment ça s'est passé ?"
+              class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none min-h-[120px] resize-none"></textarea>
+          </div>
+          <button id="btn-save" onclick="app.saveSession()" disabled
+            class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center">
+            <i data-lucide="save" class="w-5 h-5 mr-2"></i> Enregistrer
+          </button>
+        </div>
+      </div>
 
-            vibrate: function(pattern) {
-                if(app.state.haptics && navigator.vibrate) {
-                    navigator.vibrate(pattern);
-                }
-            },
+      <!-- ÉCRAN 5: RÉSULTATS -->
+      <div id="screen-result" class="screen overflow-y-auto">
+        <div class="text-center mb-6 mt-2">
+          <h2 class="text-2xl font-bold text-gray-800">Résultat</h2>
+          <p class="text-gray-500 text-sm">Séance terminée</p>
+        </div>
 
-            // --- SÉANCE ---
-            goToPreSession: function() {
-                document.getElementById('input-situation').value = '';
-                document.getElementById('btn-start').disabled = true;
-                // reset classes
-                document.getElementById('btn-start').className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center transition-all';
-                app.showScreen('screen-pre');
-            },
+        <div class="bg-white p-2 rounded-xl border border-gray-100 shadow-sm h-[250px] mb-4 w-full relative">
+          <canvas id="chartCanvas"></canvas>
+        </div>
 
-            startSession: function() {
-                app.state.situation = document.getElementById('input-situation').value;
-                app.state.elapsed = 0;
-                app.state.dataPoints = [];
-                app.state.pendingMinute = 0; // Baseline
-                
-                document.getElementById('lbl-situation').textContent = app.state.situation;
-                document.getElementById('status-indicator').className = "h-2 w-2 rounded-full bg-green-500 animate-pulse";
-                
-                app.showScreen('screen-running');
-                app.updateTimerUI();
-                app.updateInputState(true);
-                app.vibrate(300); // Start vibration
+        <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
+          <p class="text-xs font-bold text-gray-400 uppercase mb-1">Conclusion</p>
+          <p id="res-conclusion" class="text-gray-700 italic">...</p>
+        </div>
 
-                app.state.timerId = setInterval(() => {
-                    app.state.elapsed++;
-                    app.updateTimerUI();
+        <div class="flex flex-col gap-3 pb-4 mt-auto">
+          <button onclick="app.downloadCSV()"
+            class="w-full py-4 bg-brand-orange text-white rounded-xl font-bold shadow-md flex items-center justify-center">
+            <i data-lucide="download" class="w-5 h-5 mr-2"></i> CSV
+          </button>
+          <button onclick="app.reset()"
+            class="w-full py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold flex items-center justify-center">
+            <i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i> Nouvelle Séance
+          </button>
+        </div>
+      </div>
 
-                    // Check minute
-                    if(app.state.elapsed > 0 && app.state.elapsed % 60 === 0) {
-                        app.state.pendingMinute = app.state.elapsed / 60;
-                        app.updateInputState(true);
-                        app.vibrate([100, 50, 100]); // "Ding dong" effect
-                    }
-                }, 1000);
-            },
+      <!-- ÉCRAN 6: HISTORIQUE -->
+      <div id="screen-history" class="screen overflow-hidden flex-col">
+        <div class="flex items-center mb-4 pb-2 border-b border-gray-100">
+          <button onclick="app.goToHome()" class="p-2 -ml-2 text-gray-400">
+            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+          </button>
+          <h2 class="text-xl font-bold ml-2">Historique</h2>
+        </div>
+        <div id="history-list" class="flex-grow overflow-y-auto space-y-3 pr-1 pb-4"></div>
+      </div>
 
-            updateTimerUI: function() {
-                const m = Math.floor(app.state.elapsed / 60).toString().padStart(2,'0');
-                const s = (app.state.elapsed % 60).toString().padStart(2,'0');
-                document.getElementById('timer-display').textContent = `${m}:${s}`;
-            },
+    </div>
 
-            updateInputState: function(active) {
-                const grid = document.getElementById('anxiety-grid');
-                const badge = document.getElementById('prompt-badge');
-                const wait = document.getElementById('wait-text');
-                const txt = document.getElementById('prompt-text');
+    <!-- Toast -->
+    <div id="toast"
+      class="absolute top-6 left-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl flex items-center z-50">
+      <i data-lucide="check" class="w-4 h-4 mr-2 text-green-400"></i>
+      <span class="font-bold text-sm">Enregistré</span>
+    </div>
 
-                if(active) {
-                    grid.classList.remove('opacity-30', 'pointer-events-none', 'grayscale');
-                    badge.classList.remove('hidden');
-                    wait.classList.add('hidden');
-                    
-                    if(app.state.pendingMinute === 0) txt.textContent = "État Initial (0 min)";
-                    else txt.textContent = `Minute ${app.state.pendingMinute}`;
-                } else {
-                    grid.classList.add('opacity-30', 'pointer-events-none', 'grayscale');
-                    badge.classList.add('hidden');
-                    wait.classList.remove('hidden');
-                }
-            },
+  </main>
 
-            handleVote: function(level) {
-                if(app.state.pendingMinute === null) return;
+  <!-- LOGIQUE JS -->
+  <script>
+    const app = {
+      state: {
+        screen: 'screen-home',
+        elapsed: 0,
+        timerId: null,
+        situation: '',
+        dataPoints: [],
+        pendingMinute: null,
+        history: [],
+        haptics: true,
+        currentSession: null
+      },
 
-                // 1. Save
-                app.state.dataPoints.push({ minute: app.state.pendingMinute, level: level });
-                app.state.pendingMinute = null;
+      init: function () {
+        try {
+          const saved = localStorage.getItem('serenetrack_sessions');
+          if (saved) app.state.history = JSON.parse(saved);
+        } catch (e) { }
 
-                // 2. Feedback Haptique & Visuel
-                app.vibrate(50);
-                app.showToast();
+        const grid = document.getElementById('anxiety-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 10; i++) {
+          const btn = document.createElement('button');
+          btn.className = `btn-anxiety relative h-16 sm:h-20 rounded-xl font-bold text-2xl border-2 flex items-center justify-center transition-all ${app.getButtonColorClass(i)}`;
+          btn.textContent = i;
+          btn.onclick = () => app.handleVote(i);
+          if (i === 1) btn.innerHTML += '<span class="absolute bottom-1 text-[10px] font-normal opacity-60">Calme</span>';
+          if (i === 10) btn.innerHTML += '<span class="absolute bottom-1 text-[10px] font-normal opacity-60">Panique</span>';
+          grid.appendChild(btn);
+        }
 
-                // 3. Verrouiller
-                app.updateInputState(false);
-            },
+        document.getElementById('input-situation').addEventListener('input', (e) => {
+          const btn = document.getElementById('btn-start');
+          if (e.target.value.trim()) {
+            btn.disabled = false;
+            btn.className = btn.className.replace(
+              'bg-gray-200 text-gray-400 cursor-not-allowed',
+              'bg-brand-orange text-white hover:bg-brand-hover cursor-pointer shadow-lg'
+            );
+          } else {
+            btn.disabled = true;
+            btn.className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center transition-all';
+          }
+        });
 
-            showToast: function() {
-                const t = document.getElementById('toast');
-                t.classList.add('show');
-                setTimeout(() => t.classList.remove('show'), 1500);
-            },
+        document.getElementById('input-conclusion').addEventListener('input', (e) => {
+          const btn = document.getElementById('btn-save');
+          if (e.target.value.trim()) {
+            btn.disabled = false;
+            btn.className = btn.className.replace(
+              'bg-gray-200 text-gray-400 cursor-not-allowed',
+              'bg-green-600 text-white hover:bg-green-700 cursor-pointer shadow-lg'
+            );
+          } else {
+            btn.disabled = true;
+            btn.className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center';
+          }
+        });
 
-            stopSession: function() {
-                clearInterval(app.state.timerId);
-                document.getElementById('status-indicator').className = "h-2 w-2 rounded-full bg-gray-300";
-                document.getElementById('input-conclusion').value = '';
-                // reset btn class
-                const btnSave = document.getElementById('btn-save');
-                btnSave.disabled = true;
-                btnSave.className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center';
-                
-                app.showScreen('screen-post');
-                app.vibrate(100);
-            },
+        lucide.createIcons();
+      },
 
-            saveSession: function() {
-                const conclusion = document.getElementById('input-conclusion').value;
-                const session = {
-                    id: Date.now(),
-                    date: new Date().toISOString(),
-                    situation: app.state.situation,
-                    duration: app.state.elapsed,
-                    data: app.state.dataPoints,
-                    conclusion: conclusion
-                };
-                
-                app.state.history.push(session);
-                localStorage.setItem('serenetrack_sessions', JSON.stringify(app.state.history));
-                
-                app.renderResult(session);
-            },
+      showScreen: function (id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        app.state.screen = id;
+        window.scrollTo(0, 0);
+        lucide.createIcons();
+      },
 
-            // --- RESULTATS ---
-            renderResult: function(session) {
-                app.state.currentSession = session;
-                document.getElementById('res-conclusion').textContent = `"${session.conclusion}"`;
-                
-                app.showScreen('screen-result');
-                
-                // Chart.js
-                const ctx = document.getElementById('chartCanvas').getContext('2d');
-                if(window.myChart) window.myChart.destroy();
-                
-                const labels = session.data.map(d => d.minute);
-                const data = session.data.map(d => d.level);
+      toggleHaptics: function () {
+        app.state.haptics = !app.state.haptics;
+        const btn = document.getElementById('btn-haptic-toggle');
+        const txt = document.getElementById('txt-haptic');
+        if (app.state.haptics) {
+          btn.className = "flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium bg-orange-100 text-brand-orange transition-colors";
+          txt.textContent = "Vibrations activées";
+          app.vibrate(50);
+        } else {
+          btn.className = "flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium bg-gray-100 text-gray-400 transition-colors";
+          txt.textContent = "Vibrations désactivées";
+        }
+      },
 
-                window.myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Anxiété',
-                            data: data,
-                            borderColor: '#e67e22',
-                            backgroundColor: 'rgba(230, 126, 34, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#e67e22'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: { min: 0, max: 10, ticks: { stepSize: 1 } },
-                            x: { title: { display: true, text: 'Minutes' } }
-                        },
-                        plugins: { legend: { display: false } }
-                    }
-                });
-            },
+      vibrate: function (pattern) {
+        if (app.state.haptics && navigator.vibrate) navigator.vibrate(pattern);
+      },
 
-            downloadCSV: function() {
-                if(!app.state.currentSession) return;
-                const s = app.state.currentSession;
-                let csv = `Situation: ${s.situation}\nDate: ${s.date}\nConclusion: ${s.conclusion}\n\nMinute,Niveau\n`;
-                s.data.forEach(d => { csv += `${d.minute},${d.level}\n` });
-                
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `session_${s.date.slice(0,10)}.csv`;
-                a.click();
-            },
+      goToPreSession: function () {
+        document.getElementById('input-situation').value = '';
+        const b = document.getElementById('btn-start');
+        b.disabled = true;
+        b.className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center transition-all';
+        app.showScreen('screen-pre');
+      },
 
-            reset: function() {
-                app.state.screen = 'screen-home';
-                app.state.elapsed = 0;
-                app.state.dataPoints = [];
-                app.showScreen('screen-home');
-            },
+      startSession: function () {
+        app.state.situation = document.getElementById('input-situation').value;
+        app.state.elapsed = 0;
+        app.state.dataPoints = [];
+        app.state.pendingMinute = 0;
 
-            goToHistory: function() {
-                const list = document.getElementById('history-list');
-                list.innerHTML = '';
-                
-                if(app.state.history.length === 0) {
-                    list.innerHTML = '<div class="text-center text-gray-400 py-10">Aucune séance.</div>';
-                } else {
-                    [...app.state.history].reverse().forEach(s => {
-                        const date = new Date(s.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
-                        const max = Math.max(...s.data.map(d=>d.level));
-                        
-                        const el = document.createElement('button');
-                        el.className = "w-full bg-white border border-gray-100 rounded-xl p-4 text-left shadow-sm flex justify-between items-center";
-                        el.onclick = () => app.renderResult(s);
-                        el.innerHTML = `
-                            <div>
-                                <div class="font-bold text-gray-800 truncate w-48">${s.situation}</div>
-                                <div class="text-xs text-gray-500 mt-1 flex space-x-3">
-                                    <span><i data-lucide="calendar" class="w-3 h-3 inline"></i> ${date}</span>
-                                    <span><i data-lucide="clock" class="w-3 h-3 inline"></i> ${Math.floor(s.duration/60)} min</span>
-                                </div>
-                            </div>
-                            <div class="text-brand-orange font-bold text-sm">Max ${max}</div>
-                        `;
-                        list.appendChild(el);
-                    });
-                    lucide.createIcons();
-                }
-                app.showScreen('screen-history');
-            },
-            
-            goToHome: function() {
-                app.showScreen('screen-home');
-            },
+        document.getElementById('lbl-situation').textContent = app.state.situation;
+        document.getElementById('status-indicator').className = "h-2 w-2 rounded-full bg-green-500 animate-pulse";
 
-            getButtonColorClass: function(level) {
-                if (level <= 3) return 'bg-emerald-50 text-emerald-700 border-emerald-200 active:bg-emerald-200';
-                if (level <= 6) return 'bg-amber-50 text-amber-700 border-amber-200 active:bg-amber-200';
-                if (level <= 8) return 'bg-orange-50 text-orange-700 border-orange-200 active:bg-orange-200';
-                return 'bg-red-50 text-red-700 border-red-200 active:bg-red-200';
-            }
+        app.showScreen('screen-running');
+        app.updateTimerUI();
+        app.updateInputState(true);
+        app.vibrate(300);
+
+        app.state.timerId = setInterval(() => {
+          app.state.elapsed++;
+          app.updateTimerUI();
+
+          if (app.state.elapsed > 0 && app.state.elapsed % 60 === 0) {
+            app.state.pendingMinute = app.state.elapsed / 60;
+            app.updateInputState(true);
+            app.vibrate([100, 50, 100]);
+          }
+        }, 1000);
+      },
+
+      updateTimerUI: function () {
+        const m = Math.floor(app.state.elapsed / 60).toString().padStart(2, '0');
+        const s = (app.state.elapsed % 60).toString().padStart(2, '0');
+        document.getElementById('timer-display').textContent = `${m}:${s}`;
+      },
+
+      updateInputState: function (active) {
+        const grid = document.getElementById('anxiety-grid');
+        const badge = document.getElementById('prompt-badge');
+        const wait = document.getElementById('wait-text');
+        const txt = document.getElementById('prompt-text');
+
+        if (active) {
+          grid.classList.remove('opacity-30', 'pointer-events-none', 'grayscale');
+          badge.classList.remove('hidden');
+          wait.classList.add('hidden');
+          txt.textContent = (app.state.pendingMinute === 0) ? "État Initial (0 min)" : `Minute ${app.state.pendingMinute}`;
+        } else {
+          grid.classList.add('opacity-30', 'pointer-events-none', 'grayscale');
+          badge.classList.add('hidden');
+          wait.classList.remove('hidden');
+        }
+      },
+
+      handleVote: function (level) {
+        if (app.state.pendingMinute === null) return;
+        app.state.dataPoints.push({ minute: app.state.pendingMinute, level });
+        app.state.pendingMinute = null;
+        app.vibrate(50);
+        app.showToast();
+        app.updateInputState(false);
+      },
+
+      showToast: function () {
+        const t = document.getElementById('toast');
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 1500);
+      },
+
+      stopSession: function () {
+        clearInterval(app.state.timerId);
+        document.getElementById('status-indicator').className = "h-2 w-2 rounded-full bg-gray-300";
+        document.getElementById('input-conclusion').value = '';
+
+        const btnSave = document.getElementById('btn-save');
+        btnSave.disabled = true;
+        btnSave.className = 'mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center';
+
+        app.showScreen('screen-post');
+        app.vibrate(100);
+      },
+
+      saveSession: function () {
+        const conclusion = document.getElementById('input-conclusion').value;
+        const session = {
+          id: Date.now(),
+          date: new Date().toISOString(),
+          situation: app.state.situation,
+          duration: app.state.elapsed,
+          data: app.state.dataPoints,
+          conclusion
         };
 
-        // Démarrage
-        document.addEventListener('DOMContentLoaded', app.init);
-   if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/expositionTCC/sw.js");
-}
-</script>
+        app.state.history.push(session);
+        localStorage.setItem('serenetrack_sessions', JSON.stringify(app.state.history));
+        app.renderResult(session);
+      },
+
+      renderResult: function (session) {
+        app.state.currentSession = session;
+        document.getElementById('res-conclusion').textContent = `"${session.conclusion}"`;
+        app.showScreen('screen-result');
+
+        const ctx = document.getElementById('chartCanvas').getContext('2d');
+        if (window.myChart) window.myChart.destroy();
+
+        const labels = session.data.map(d => d.minute);
+        const data = session.data.map(d => d.level);
+
+        window.myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Anxiété',
+              data,
+              borderColor: '#e67e22',
+              backgroundColor: 'rgba(230, 126, 34, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderColor: '#e67e22'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { min: 0, max: 10, ticks: { stepSize: 1 } },
+              x: { title: { display: true, text: 'Minutes' } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      },
+
+      downloadCSV: function () {
+        if (!app.state.currentSession) return;
+        const s = app.state.currentSession;
+        let csv = `Situation: ${s.situation}\nDate: ${s.date}\nConclusion: ${s.conclusion}\n\nMinute,Niveau\n`;
+        s.data.forEach(d => { csv += `${d.minute},${d.level}\n`; });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `session_${s.date.slice(0, 10)}.csv`;
+        a.click();
+      },
+
+      reset: function () {
+        app.state.screen = 'screen-home';
+        app.state.elapsed = 0;
+        app.state.dataPoints = [];
+        app.showScreen('screen-home');
+      },
+
+      goToHistory: function () {
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+
+        if (app.state.history.length === 0) {
+          list.innerHTML = '<div class="text-center text-gray-400 py-10">Aucune séance.</div>';
+        } else {
+          [...app.state.history].reverse().forEach(s => {
+            const date = new Date(s.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+            const max = Math.max(...s.data.map(d => d.level));
+
+            const el = document.createElement('button');
+            el.className = "w-full bg-white border border-gray-100 rounded-xl p-4 text-left shadow-sm flex justify-between items-center";
+            el.onclick = () => app.renderResult(s);
+            el.innerHTML = `
+              <div>
+                <div class="font-bold text-gray-800 truncate w-48">${s.situation}</div>
+                <div class="text-xs text-gray-500 mt-1 flex space-x-3">
+                  <span><i data-lucide="calendar" class="w-3 h-3 inline"></i> ${date}</span>
+                  <span><i data-lucide="clock" class="w-3 h-3 inline"></i> ${Math.floor(s.duration / 60)} min</span>
+                </div>
+              </div>
+              <div class="text-brand-orange font-bold text-sm">Max ${max}</div>
+            `;
+            list.appendChild(el);
+          });
+          lucide.createIcons();
+        }
+
+        app.showScreen('screen-history');
+      },
+
+      goToHome: function () { app.showScreen('screen-home'); },
+
+      getButtonColorClass: function (level) {
+        if (level <= 3) return 'bg-emerald-50 text-emerald-700 border-emerald-200 active:bg-emerald-200';
+        if (level <= 6) return 'bg-amber-50 text-amber-700 border-amber-200 active:bg-amber-200';
+        if (level <= 8) return 'bg-orange-50 text-orange-700 border-orange-200 active:bg-orange-200';
+        return 'bg-red-50 text-red-700 border-red-200 active:bg-red-200';
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      app.init();
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/expositionTCC/sw.js");
+      }
+    });
+  </script>
+
 </body>
 </html>
