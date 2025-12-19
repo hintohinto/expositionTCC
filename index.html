@@ -555,10 +555,7 @@
 
         // Démarrage
         document.addEventListener('DOMContentLoaded', app.init);
-    </script>
-<script type="module" src="/index.tsx"></script>
-    <script>
-if ("serviceWorker" in navigator) {
+   if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/expositionTCC/sw.js");
 }
 </script>
