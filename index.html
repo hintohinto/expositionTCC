@@ -39,19 +39,19 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Chrono XL (Point 3) */
+    /* Chrono XL et Lisible */
     #timer-display { font-size: 2.5rem; line-height: 1; font-weight: 800; color: #e67e22; }
 
-    /* Mini-courbes Historique */
+    /* Mini-courbes dans l'Historique */
     .sparkline-canvas { width: 80px !important; height: 40px !important; }
 
-    /* MODE IMPRESSION (Point E) pour PDF */
+    /* MODE IMPRESSION pour PDF */
     @media print {
       body { background: white; }
       .no-print { display: none !important; }
       #screen-result { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
       .screen:not(#screen-result) { display: none !important; }
-      main { box-shadow: none; max-width: 100%; height: auto; }
+      main { box-shadow: none; max-width: 100%; height: auto; border: none; }
       canvas { max-width: 100% !important; height: auto !important; }
     }
 
@@ -71,14 +71,14 @@
 
 <body class="text-gray-800 h-screen w-screen flex flex-col md:items-center md:justify-center md:bg-gray-100">
 
-  <main class="w-full md:max-w-[500px] bg-white h-full md:h-[800px] md:rounded-3xl md:shadow-2xl overflow-hidden flex flex-col relative">
+  <main class="w-full md:max-w-[500px] bg-white h-full md:h-[800px] md:rounded-3xl md:shadow-2xl overflow-hidden flex flex-col relative border-x border-gray-100">
 
     <header class="bg-white border-b border-gray-100 p-4 flex justify-between items-center z-10 shrink-0 no-print">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">SereneTrack</h1>
         <p class="text-xs text-gray-500">Thérapie TCC</p>
       </div>
-      <div class="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-2xl">
+      <div class="flex items-center space-x-2 bg-orange-50 px-3 py-2 rounded-2xl">
         <div id="status-indicator" class="h-3 w-3 rounded-full bg-gray-300"></div>
         <div id="timer-display">00:00</div>
       </div>
@@ -91,46 +91,48 @@
           <i data-lucide="play" class="w-10 h-10 text-brand-orange ml-1"></i>
         </div>
         <div>
-          <h2 class="text-2xl font-bold mb-2">Prêt pour l'exercice ?</h2>
-          <p class="text-gray-500 text-sm max-w-[280px] mx-auto">L'écran restera allumé pendant toute la durée de votre exposition.</p>
+          <h2 class="text-2xl font-bold mb-2">Prêt pour l'exposition ?</h2>
+          <p class="text-gray-500 text-sm max-w-[280px] mx-auto">L'écran restera allumé pour faciliter l'enregistrement de votre état.</p>
         </div>
         <div class="w-full max-w-xs space-y-3">
           <button onclick="app.goToPreSession()" class="w-full py-4 bg-brand-orange text-white rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-transform">
-            Démarrer la Séance
+            Nouvelle Séance
           </button>
           <button onclick="app.goToHistory()" class="w-full py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-medium flex items-center justify-center">
-            <i data-lucide="history" class="w-4 h-4 mr-2"></i> Historique
+            <i data-lucide="history" class="w-4 h-4 mr-2"></i> Voir mes progrès
           </button>
         </div>
       </div>
 
       <div id="screen-pre" class="screen no-print">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-lg font-bold">Situation</h2>
+          <h2 class="text-lg font-bold">Décrivez la situation</h2>
           <button onclick="app.goToHome()" class="p-2 text-gray-400"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
-        <textarea id="input-situation" placeholder="Ex: Aller dans un bar seul..." class="w-full p-4 border border-gray-300 rounded-xl min-h-[150px] text-lg mb-4"></textarea>
+        <textarea id="input-situation" placeholder="Ex: Commander un café seul en terrasse..." class="w-full p-4 border border-gray-300 rounded-xl min-h-[150px] text-lg mb-4 focus:ring-2 focus:ring-brand-orange focus:border-transparent outline-none"></textarea>
         <button id="btn-start" onclick="app.startSession()" disabled class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed">
-          C'est parti
+          Démarrer
         </button>
       </div>
 
       <div id="screen-running" class="screen no-print">
-        <p id="lbl-situation" class="text-center text-sm text-gray-500 font-medium mb-8 truncate italic"></p>
+        <p id="lbl-situation" class="text-center text-sm text-gray-400 font-medium mb-8 truncate italic px-4"></p>
         <div class="flex items-center justify-center mb-6 h-12">
-          <div id="prompt-badge" class="hidden bg-green-100 text-green-800 px-6 py-2 rounded-full text-sm font-bold animate-bounce">
-            <span id="prompt-text">Votez maintenant</span>
+          <div id="prompt-badge" class="hidden bg-brand-orange text-white px-6 py-2 rounded-full text-sm font-bold animate-bounce">
+            <span id="prompt-text">Enregistrez votre état</span>
           </div>
-          <p id="wait-text" class="text-gray-300 text-xs">Attente de la prochaine mesure...</p>
+          <p id="wait-text" class="text-gray-300 text-xs">Analyse en cours...</p>
         </div>
+        <h3 class="text-center text-gray-700 font-bold mb-4">Notez votre anxiété (1-10)</h3>
         <div class="grid grid-cols-2 gap-3 mb-6" id="anxiety-grid"></div>
-        <button onclick="app.stopSession()" class="w-full py-4 border-2 border-red-100 text-red-500 bg-red-50 rounded-xl font-bold">Terminer l'exercice</button>
+        <button onclick="app.stopSession()" class="w-full py-4 border-2 border-red-100 text-red-500 bg-red-50 rounded-xl font-bold">Terminer la séance</button>
       </div>
 
       <div id="screen-post" class="screen no-print">
-        <h2 class="text-xl font-bold mb-4">Conclusion de l'exercice</h2>
-        <textarea id="input-conclusion" placeholder="Qu'avez-vous appris ? (ex: les gens ne me regardaient pas)" class="w-full p-4 border border-gray-300 rounded-xl min-h-[150px] mb-4"></textarea>
-        <button id="btn-save" onclick="app.saveSession()" disabled class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed">Enregistrer</button>
+        <h2 class="text-xl font-bold mb-4">Qu'avez-vous appris ?</h2>
+        <p class="text-sm text-gray-500 mb-4 italic">Notez vos observations pour votre thérapeute.</p>
+        <textarea id="input-conclusion" placeholder="Ex: J'ai remarqué que personne ne me regardait finalement." class="w-full p-4 border border-gray-300 rounded-xl min-h-[150px] mb-4 focus:ring-2 focus:ring-green-500 outline-none"></textarea>
+        <button id="btn-save" onclick="app.saveSession()" disabled class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400 cursor-not-allowed">Valider le bilan</button>
       </div>
 
       <div id="screen-result" class="screen overflow-y-auto">
@@ -139,33 +141,36 @@
           <p id="res-date" class="text-gray-400 text-xs"></p>
         </div>
         <div class="mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
-          <p class="text-[10px] font-bold text-brand-orange uppercase">Situation</p>
-          <p id="res-situation" class="text-gray-800 font-medium"></p>
+          <p class="text-[10px] font-bold text-brand-orange uppercase tracking-wider mb-1">Situation</p>
+          <p id="res-situation" class="text-gray-800 font-medium leading-tight"></p>
         </div>
-        <div class="bg-white p-2 rounded-xl border border-gray-100 h-[280px] mb-6">
+        <div class="bg-white p-2 rounded-xl border border-gray-100 h-[280px] mb-6 shadow-sm">
           <canvas id="chartCanvas"></canvas>
         </div>
         <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
-          <p class="text-[10px] font-bold text-gray-400 uppercase">Conclusion TCC</p>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Observation TCC</p>
           <p id="res-conclusion" class="text-gray-700 italic leading-relaxed"></p>
         </div>
         <div class="flex flex-col gap-3 no-print mt-auto">
-          <button onclick="window.print()" class="w-full py-4 bg-brand-orange text-white rounded-xl font-bold shadow-lg flex items-center justify-center">
-            <i data-lucide="share-2" class="w-5 h-5 mr-2"></i> Partager le Bilan (PDF)
+          <button onclick="window.print()" class="w-full py-4 bg-brand-orange text-white rounded-xl font-bold shadow-lg flex items-center justify-center active:scale-95 transition-transform">
+            <i data-lucide="file-text" class="w-5 h-5 mr-2"></i> Partager le Bilan (PDF)
           </button>
-          <button onclick="app.reset()" class="w-full py-4 text-gray-500 font-bold">Retour à l'accueil</button>
+          <button onclick="app.reset()" class="w-full py-4 text-gray-400 font-bold">Retour à l'accueil</button>
         </div>
       </div>
 
       <div id="screen-history" class="screen no-print">
-        <div class="flex items-center mb-4"><button onclick="app.goToHome()" class="p-2 -ml-2"><i data-lucide="arrow-left"></i></button><h2 class="text-xl font-bold ml-2">Mes Progrès</h2></div>
-        <div id="history-list" class="space-y-3 pb-4"></div>
+        <div class="flex items-center mb-6">
+          <button onclick="app.goToHome()" class="p-2 -ml-2 text-gray-400 hover:text-gray-800 transition-colors"><i data-lucide="arrow-left"></i></button>
+          <h2 class="text-xl font-bold ml-2">Historique des séances</h2>
+        </div>
+        <div id="history-list" class="space-y-3 pb-6"></div>
       </div>
 
     </div>
 
     <div id="toast" class="absolute top-6 left-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl flex items-center z-50">
-      <i data-lucide="check" class="w-4 h-4 mr-2 text-green-400"></i><span class="text-sm font-bold">Point enregistré</span>
+      <i data-lucide="check-circle" class="w-4 h-4 mr-2 text-green-400"></i><span class="text-sm font-bold">État enregistré</span>
     </div>
   </main>
 
@@ -184,7 +189,7 @@
           const btn = document.createElement('button');
           btn.className = `h-16 rounded-xl font-bold text-xl border-2 transition-all ${app.getBtnColor(i)}`;
           btn.textContent = i;
-          btn.onclick = () => app.handleVote(i);
+          btn.onclick = () => app.recordAnxiety(i);
           grid.appendChild(btn);
         }
 
@@ -203,7 +208,7 @@
         lucide.createIcons();
       },
 
-      getBtnColor: (l) => l <= 3 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : l <= 6 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200',
+      getBtnColor: (l) => l <= 3 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 active:bg-emerald-200' : l <= 6 ? 'bg-amber-50 text-amber-700 border-amber-200 active:bg-amber-200' : 'bg-red-50 text-red-700 border-red-200 active:bg-red-200',
 
       showScreen: (id) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -211,7 +216,13 @@
         lucide.createIcons();
       },
 
-      goToPreSession: () => { document.getElementById('input-situation').value = ''; app.showScreen('screen-pre'); },
+      // BUG FIX: On vide systématiquement les champs texte pour laisser place aux placeholders
+      goToPreSession: () => { 
+        document.getElementById('input-situation').value = ''; 
+        document.getElementById('input-conclusion').value = ''; 
+        app.showScreen('screen-pre'); 
+      },
+      
       goToHome: () => app.showScreen('screen-home'),
 
       startSession: function () {
@@ -245,7 +256,7 @@
         document.getElementById('wait-text').classList.toggle('hidden', active);
       },
 
-      handleVote: (level) => {
+      recordAnxiety: (level) => {
         app.state.dataPoints.push({ minute: app.state.pendingMinute, level });
         app.state.pendingMinute = null;
         app.updateInputState(false);
@@ -291,13 +302,18 @@
               backgroundColor: 'rgba(230, 126, 34, 0.1)',
               borderWidth: 4,
               fill: true,
-              tension: 0.3
+              tension: 0.3,
+              pointRadius: 4,
+              pointBackgroundColor: '#e67e22'
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: { y: { min: 0, max: 10, ticks: { stepSize: 1 } } },
+            scales: { 
+                y: { min: 0, max: 10, ticks: { stepSize: 1 }, title: { display: true, text: 'Anxiété' } },
+                x: { title: { display: true, text: 'Temps (min)' } }
+            },
             plugins: { legend: { display: false } }
           }
         });
@@ -306,36 +322,51 @@
       goToHistory: () => {
         const list = document.getElementById('history-list');
         list.innerHTML = '';
-        [...app.state.history].reverse().forEach((s, idx) => {
-          const date = new Date(s.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-          const el = document.createElement('button');
-          el.className = "w-full bg-white border border-gray-100 rounded-2xl p-4 text-left shadow-sm flex justify-between items-center";
-          el.onclick = () => app.renderResult(s);
-          el.innerHTML = `
-            <div class="flex-grow min-w-0 mr-4">
-              <div class="font-bold text-gray-800 truncate">${s.situation}</div>
-              <div class="text-[10px] text-gray-400 mt-1 uppercase font-bold">${date} • ${Math.floor(s.duration / 60)} min</div>
-            </div>
-            <canvas id="sparkline-${idx}" class="sparkline-canvas"></canvas>
-            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 ml-2"></i>
-          `;
-          list.appendChild(el);
+        if (app.state.history.length === 0) {
+            list.innerHTML = '<div class="text-center text-gray-400 py-10">Aucune séance enregistrée.</div>';
+        } else {
+            [...app.state.history].reverse().forEach((s, idx) => {
+              const date = new Date(s.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+              const el = document.createElement('button');
+              el.className = "w-full bg-white border border-gray-100 rounded-2xl p-4 text-left shadow-sm flex justify-between items-center active:bg-gray-50 transition-colors";
+              el.onclick = () => app.renderResult(s);
+              el.innerHTML = `
+                <div class="flex-grow min-w-0 mr-4">
+                  <div class="font-bold text-gray-800 truncate">${s.situation}</div>
+                  <div class="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-wider">${date} • ${Math.floor(s.duration / 60)} min</div>
+                </div>
+                <canvas id="sparkline-${idx}" class="sparkline-canvas"></canvas>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 ml-2"></i>
+              `;
+              list.appendChild(el);
 
-          // Dessin Sparkline (Mini-courbe)
-          setTimeout(() => {
-            const ctx = document.getElementById(`sparkline-${idx}`).getContext('2d');
-            const vals = s.data.map(d => d.level);
-            new Chart(ctx, {
-              type: 'line',
-              data: { labels: vals, datasets: [{ data: vals, borderColor: '#e67e22', borderWidth: 2, fill: false, pointRadius: 0 }] },
-              options: { responsive: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, min: 0, max: 10 } } }
+              // Dessin Sparkline (Mini-courbe)
+              setTimeout(() => {
+                const ctx = document.getElementById(`sparkline-${idx}`).getContext('2d');
+                const vals = s.data.map(d => d.level);
+                new Chart(ctx, {
+                  type: 'line',
+                  data: { labels: vals, datasets: [{ data: vals, borderColor: '#e67e22', borderWidth: 2, fill: false, pointRadius: 0 }] },
+                  options: { 
+                    responsive: false, 
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }, 
+                    scales: { x: { display: false }, y: { display: false, min: 0, max: 10 } } 
+                  }
+                });
+              }, 0);
             });
-          }, 0);
-        });
+        }
         app.showScreen('screen-history');
       },
 
-      reset: () => { app.state.elapsed = 0; document.getElementById('timer-display').textContent = '00:00'; app.showScreen('screen-home'); }
+      reset: () => { 
+        app.state.elapsed = 0; 
+        document.getElementById('timer-display').textContent = '00:00'; 
+        // On vide aussi ici par sécurité
+        document.getElementById('input-situation').value = ''; 
+        document.getElementById('input-conclusion').value = '';
+        app.showScreen('screen-home'); 
+      }
     };
 
     document.addEventListener('DOMContentLoaded', app.init);
