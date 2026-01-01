@@ -72,8 +72,8 @@
           <i data-lucide="play" class="w-10 h-10 text-brand-orange ml-1"></i>
         </div>
         <div>
-          <h2 class="text-2xl font-bold mb-2">Prêt pour l'exposition ?</h2>
-          <p class="text-gray-500 text-sm max-w-[280px] mx-auto">Chaque minute compte pour habituer votre cerveau.</p>
+          <h2 class="text-2xl font-bold mb-2">Prêt à commencer ?</h2>
+          <p class="text-gray-500 text-sm max-w-[280px] mx-auto">Définissez votre situation, lancez le chrono et notez votre anxiété minute par minute.</p>
         </div>
         <div class="w-full max-w-xs space-y-3">
           <button onclick="app.goToPreSession()" class="w-full py-4 bg-brand-orange text-white rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-transform">
@@ -87,12 +87,12 @@
 
       <div id="screen-pre" class="screen no-print">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-lg font-bold">Situation (Où ? Avec qui ? Quoi ?) ?</h2>
+          <h2 class="text-lg font-bold">Situation d'exposition</h2>
           <button onclick="app.goToHome()" class="p-2 text-gray-400"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
-        <textarea id="input-situation" placeholder="Ex: Au comptoir du bar, entouré de monde..." class="w-full p-4 border border-gray-300 rounded-xl min-h-[150px] text-lg mb-4 focus:ring-2 focus:ring-brand-orange outline-none"></textarea>
+        <textarea id="input-situation" placeholder="Ex: Commander un café dans un bar..." class="w-full p-4 border border-gray-300 rounded-xl min-h-[150px] text-lg mb-4 focus:ring-2 focus:ring-brand-orange outline-none"></textarea>
         <button id="btn-start" onclick="app.startSession()" disabled class="mt-auto w-full py-4 rounded-xl font-bold text-lg bg-gray-200 text-gray-400">
-          C'est parti
+          Commencer l'exposition
         </button>
       </div>
 
